@@ -6,8 +6,8 @@ import { AppButton, OtpInput, ScreenContainer } from "@/components/justus";
 
 export const Route = createFileRoute("/verify-otp")({
   validateSearch: (s: Record<string, unknown>) => ({
-    phone: typeof s.phone === "string" ? s.phone : "",
-    cc: typeof s.cc === "string" ? s.cc : "+91",
+    phone: typeof s["phone"] === "string" ? s["phone"] : "",
+    cc: typeof s["cc"] === "string" ? s["cc"] : "+91",
   }),
   head: () => ({
     meta: [

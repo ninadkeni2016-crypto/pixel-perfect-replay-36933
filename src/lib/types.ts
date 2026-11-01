@@ -22,6 +22,6 @@ export interface Message {
 export interface Conversation {
   id: string;
   partner: Partner;
-  lastMessage?: Pick<Message, "text" | "createdAt" | "senderId">;
+  lastMessage?: Pick<Message, "text" | "createdAt" | "senderId"> | undefined;
   unreadCount: number;
 }

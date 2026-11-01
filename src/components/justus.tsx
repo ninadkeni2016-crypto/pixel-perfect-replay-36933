@@ -6,7 +6,7 @@ import { COUNTRIES } from "@/lib/authService";
 import type { Conversation, Message } from "@/lib/types";
 import { formatListTime, formatTime } from "@/lib/chatStorage";
 
-export function ScreenContainer({ children, className }: { children: ReactNode; className?: string }) {
+export function ScreenContainer({ children, className }: { children?: ReactNode; className?: string }) {
   return (
     <div className="min-h-dvh bg-background">
       <div className={cn("mx-auto flex min-h-dvh w-full max-w-md flex-col", className)}>{children}</div>

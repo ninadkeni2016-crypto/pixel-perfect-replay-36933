@@ -64,7 +64,7 @@ function Chat() {
         )}
         {messages.map((m, i) => {
           const day = formatDay(m.createdAt);
-          const showDay = i === 0 || formatDay(messages[i - 1].createdAt) !== day;
+          const showDay = i === 0 || formatDay(messages[i - 1]!.createdAt) !== day;
           return (
             <Fragment key={m.id}>
               {showDay && (

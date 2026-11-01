@@ -4,9 +4,9 @@ import { getSession, requestOtp, validatePhone } from "@/lib/authService";
 import { AppButton, Logo, PhoneInput, ScreenContainer } from "@/components/justus";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    phone: typeof s.phone === "string" ? s.phone : undefined,
-    cc: typeof s.cc === "string" ? s.cc : undefined,
+  validateSearch: (s: Record<string, unknown>): { phone?: string | undefined; cc?: string | undefined } => ({
+    phone: typeof s["phone"] === "string" ? s["phone"] : undefined,
+    cc: typeof s["cc"] === "string" ? s["cc"] : undefined,
   }),
   head: () => ({
     meta: [
