@@ -39,6 +39,7 @@ function Login() {
     setLoading(true);
     try {
       await requestOtp(cc, phone);
+      await navigate({ to: "/login", search: { phone, cc }, replace: true });
       navigate({ to: "/verify-otp", search: { phone, cc } });
     } catch {
       setError("Something went wrong. Please try again.");
