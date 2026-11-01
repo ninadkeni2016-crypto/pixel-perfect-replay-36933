@@ -121,7 +121,6 @@ export function OtpInput({ value, onChange, error }: { value: string; onChange: 
           }}
           aria-label={`Digit ${i + 1}`}
           inputMode="numeric"
-          maxLength={1}
           value={d}
           className={cn(
             "h-14 w-12 rounded-2xl border bg-card text-center text-2xl font-semibold outline-none transition focus:border-primary",
