@@ -4,7 +4,7 @@ import { Heart, Loader2, SendHorizontal, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COUNTRIES } from "@/lib/authService";
 import type { Conversation, Message } from "@/lib/types";
-import { formatListTime, formatTime } from "@/lib/chatStorage";
+import { formatListTime, formatTime } from "@/lib/format";
 
 export function ScreenContainer({ children, className }: { children?: ReactNode; className?: string }) {
   return (
