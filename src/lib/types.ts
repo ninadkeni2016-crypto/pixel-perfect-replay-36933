@@ -1,15 +1,10 @@
-export interface User {
-  id: string;
-  phone: string;
-  countryCode: string;
-  displayName: string;
-}
-
 export interface Partner {
   id: string;
   displayName: string;
   initials: string;
 }
+
+export type MessageStatus = "sending" | "sent" | "failed";
 
 export interface Message {
   id: string;
@@ -17,6 +12,7 @@ export interface Message {
   senderId: string;
   text: string;
   createdAt: number;
+  status?: MessageStatus;
 }
 
 export interface Conversation {

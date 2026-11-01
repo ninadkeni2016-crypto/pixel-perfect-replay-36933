@@ -1,8 +1,13 @@
-// DEMO auth. No SMS is sent. Swap these functions for a real OTP provider in Phase 2.
-import type { User } from "./types";
-
-const SESSION_KEY = "justus.session";
-export const DEMO_OTP = "123456";
+// Real phone OTP via Firebase Authentication. No codes or secrets are stored by the app.
+import {
+  RecaptchaVerifier,
+  onAuthStateChanged,
+  signInWithPhoneNumber,
+  signOut,
+  type ConfirmationResult,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { firebaseAuth } from "./firebase";
 
 export const COUNTRIES = [
   { code: "+91", flag: "🇮🇳", name: "India", digits: 10 },
@@ -12,7 +17,7 @@ export const COUNTRIES = [
   { code: "+971", flag: "🇦🇪", name: "UAE", digits: 9 },
 ];
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
 
 export function validatePhone(countryCode: string, phone: string): string | null {
   const digits = phone.replace(/\D/g, "");
@@ -23,27 +28,69 @@ export function validatePhone(countryCode: string, phone: string): string | null
   return null;
 }
 
-export async function requestOtp(_countryCode: string, _phone: string): Promise<void> {
-  await wait(700); // demo: pretend to send
-}
+// Held in memory only (never persisted). Lost on page refresh → user re-requests a code.
+let confirmation: ConfirmationResult | null = null;
+let verifier: RecaptchaVerifier | null = null;
 
-export async function verifyOtp(countryCode: string, phone: string, otp: string): Promise<User> {
-  await wait(800);
-  if (otp !== DEMO_OTP) throw new Error("That code isn't right. Try 123456 in demo mode.");
-  const user: User = { id: "me", phone, countryCode, displayName: "You" };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  return user;
-}
+export const hasPendingConfirmation = () => confirmation !== null;
 
-export function getSession(): User | null {
+export async function requestOtp(countryCode: string, phone: string): Promise<void> {
+  const auth = firebaseAuth();
+  verifier?.clear();
+  const el = document.getElementById(RECAPTCHA_CONTAINER_ID);
+  if (el) el.innerHTML = "";
+  verifier = new RecaptchaVerifier(auth, RECAPTCHA_CONTAINER_ID, { size: "invisible" });
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as User) : null;
-  } catch {
-    return null;
+    confirmation = await signInWithPhoneNumber(auth, `${countryCode}${phone.replace(/\D/g, "")}`, verifier);
+  } catch (e) {
+    verifier.clear();
+    verifier = null;
+    throw new Error(authErrorMessage(e));
   }
 }
 
-export function logout() {
-  localStorage.removeItem(SESSION_KEY); // chat history intentionally kept
+export async function verifyOtp(code: string): Promise<FirebaseUser> {
+  if (!confirmation) throw new Error("This code has expired. Please request a new one.");
+  try {
+    const cred = await confirmation.confirm(code);
+    confirmation = null;
+    return cred.user;
+  } catch (e) {
+    throw new Error(authErrorMessage(e));
+  }
+}
+
+export function subscribeAuth(cb: (user: FirebaseUser | null) => void) {
+  return onAuthStateChanged(firebaseAuth(), cb);
+}
+
+export async function logout() {
+  confirmation = null;
+  await signOut(firebaseAuth());
+}
+
+export function authErrorMessage(e: unknown): string {
+  const code = (e as { code?: string })?.code ?? "";
+  switch (code) {
+    case "auth/invalid-verification-code":
+      return "That code isn't right. Please check and try again.";
+    case "auth/code-expired":
+      return "This code has expired. Tap Resend to get a new one.";
+    case "auth/invalid-phone-number":
+      return "That phone number doesn't look valid.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please wait a while and try again.";
+    case "auth/network-request-failed":
+      return "Network problem. Check your connection and try again.";
+    case "auth/captcha-check-failed":
+      return "Security check failed. Please try again.";
+    case "auth/quota-exceeded":
+      return "SMS limit reached for now. Please try later.";
+    case "auth/operation-not-allowed":
+      return "Phone sign-in isn't enabled in Firebase yet.";
+    case "auth/unauthorized-domain":
+      return "This website isn't on Firebase's list of authorized domains yet.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
 }
