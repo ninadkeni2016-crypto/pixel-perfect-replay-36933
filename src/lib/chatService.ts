@@ -49,12 +49,12 @@ export async function checkMembership(conversationId: string, uid: string): Prom
 const messagesCol = (conversationId: string) => collection(db(), "conversations", conversationId, "messages");
 
 function toMessage(id: string, d: Record<string, unknown>, pending: boolean): Message {
-  const ts = d.createdAt as Timestamp | null | undefined;
+  const ts = d["createdAt"] as Timestamp | null | undefined;
   return {
     id,
-    conversationId: String(d.conversationId ?? ""),
-    senderId: String(d.senderId ?? ""),
-    text: String(d.text ?? ""),
+    conversationId: String(d["conversationId"] ?? ""),
+    senderId: String(d["senderId"] ?? ""),
+    text: String(d["text"] ?? ""),
     createdAt: ts ? ts.toMillis() : Date.now(),
     status: pending ? "sending" : "sent",
   };
