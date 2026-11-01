@@ -159,11 +159,11 @@ export function Avatar({ initials, online, size = 48 }: { initials: string; onli
   );
 }
 
-export function ChatListItem({ conversation, online, onClick }: { conversation: Conversation; online: boolean; onClick: () => void }) {
+export function ChatListItem({ conversation, myId, onClick }: { conversation: Conversation; myId: string; onClick: () => void }) {
   const { partner, lastMessage, unreadCount } = conversation;
   return (
     <button onClick={onClick} className="animate-rise flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left transition hover:bg-accent">
-      <Avatar initials={partner.initials} online={online} size={54} />
+      <Avatar initials={partner.initials} size={54} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate font-semibold">{partner.displayName}</span>
@@ -171,7 +171,7 @@ export function ChatListItem({ conversation, online, onClick }: { conversation: 
         </div>
         <div className="mt-1 flex items-center justify-between gap-2">
           <span className="truncate text-sm text-muted-foreground">
-            {lastMessage ? (lastMessage.senderId === "me" ? "You: " : "") + lastMessage.text : "Say hi 👋"}
+            {lastMessage ? (lastMessage.senderId === myId ? "You: " : "") + lastMessage.text : "No messages yet — say hi 👋"}
           </span>
           {unreadCount > 0 && (
             <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">{unreadCount}</span>
@@ -182,19 +182,42 @@ export function ChatListItem({ conversation, online, onClick }: { conversation: 
   );
 }
 
-export function MessageBubble({ message, mine }: { message: Message; mine: boolean }) {
+export function MessageBubble({ message, mine, onRetry }: { message: Message; mine: boolean; onRetry?: () => void }) {
+  const failed = message.status === "failed";
   return (
-    <div className={cn("animate-rise flex", mine ? "justify-end" : "justify-start")}>
+    <div className={cn("animate-rise flex flex-col", mine ? "items-end" : "items-start")}>
       <div
         className={cn(
           "max-w-[78%] rounded-3xl px-4 py-2.5",
           mine ? "bg-love rounded-br-md text-primary-foreground" : "rounded-bl-md bg-card text-card-foreground",
+          failed && "opacity-60",
         )}
       >
         <p className="break-words whitespace-pre-wrap">{message.text}</p>
-        <p className={cn("mt-1 text-right text-[11px]", mine ? "text-primary-foreground/70" : "text-muted-foreground")}>{formatTime(message.createdAt)}</p>
+        <p className={cn("mt-1 text-right text-[11px]", mine ? "text-primary-foreground/70" : "text-muted-foreground")}>
+          {formatTime(message.createdAt)}
+          {mine && message.status === "sending" && " · Sending…"}
+          {mine && message.status === "sent" && " · Sent"}
+        </p>
       </div>
+      {failed && (
+        <button onClick={onRetry} className="mt-1 text-xs font-medium text-destructive">
+          Not sent · Tap to retry
+        </button>
+      )}
     </div>
+  );
+}
+
+export function SetupNotice({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <ScreenContainer className="justify-center px-6">
+      <div className="animate-rise rounded-3xl bg-card p-6">
+        <Logo size={44} />
+        <h1 className="mt-4 font-display text-2xl font-bold">{title}</h1>
+        <div className="mt-3 space-y-3 text-sm text-muted-foreground">{children}</div>
+      </div>
+    </ScreenContainer>
   );
 }
 
